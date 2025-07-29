@@ -1,623 +1,898 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Motion Detector - Real-time Motion Extraction</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Motion Detector - Real-time Motion Extraction</title>
+ <style>
+ * {
+ margin: 0;
+ padding: 0;
+ box-sizing: border-box;
+ }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background-color: #0f0f0f;
-            color: #e0e0e0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+ body {
+ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+ background-color: #0f0f0f;
+ color: #e0e0e0;
+ min-height: 100vh;
+ display: flex;
+ flex-direction: column;
+ }
 
-        .header {
-            background-color: #1a1a1a;
-            padding: 1rem 2rem;
-            border-bottom: 1px solid #333;
-        }
+ .header {
+ background-color: #1a1a1a;
+ padding: 1rem 2rem;
+ border-bottom: 1px solid #333;
+ }
 
-        .header h1 {
-            font-size: 1.5rem;
-            font-weight: 500;
-            color: #fff;
-        }
+ .header h1 {
+ font-size: 1.5rem;
+ font-weight: 500;
+ color: #fff;
+ }
 
-        .main-container {
-            flex: 1;
-            padding: 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-            width: 100%;
-        }
+ .main-container {
+ flex: 1;
+ padding: 2rem;
+ max-width: 1200px;
+ margin: 0 auto;
+ width: 100%;
+ }
 
-        .controls {
-            background-color: #1a1a1a;
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            border: 1px solid #333;
-        }
+ .controls {
+ background-color: #1a1a1a;
+ border-radius: 12px;
+ padding: 1.5rem;
+ margin-bottom: 2rem;
+ border: 1px solid #333;
+ }
 
-        .control-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1.5rem;
-            align-items: center;
-        }
+ .control-group {
+ display: flex;
+ flex-wrap: wrap;
+ gap: 1.5rem;
+ align-items: flex-start;
+ }
 
-        .control-item {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
+ .control-item {
+ display: flex;
+ flex-direction: column;
+ gap: 0.5rem;
+ }
 
-        .control-item label {
-            font-size: 0.875rem;
-            color: #a0a0a0;
-            font-weight: 500;
-        }
+ .control-item label {
+ font-size: 0.875rem;
+ color: #a0a0a0;
+ font-weight: 500;
+ }
 
-        .slider-container {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
+ .slider-container {
+ display: flex;
+ align-items: center;
+ gap: 1rem;
+ }
 
-        input[type="range"] {
-            width: 150px;
-            height: 6px;
-            background: #333;
-            border-radius: 3px;
-            outline: none;
-            -webkit-appearance: none;
-        }
+ input[type="range"] {
+ width: 150px;
+ height: 6px;
+ background: #333;
+ border-radius: 3px;
+ outline: none;
+ -webkit-appearance: none;
+ }
 
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 18px;
-            height: 18px;
-            background: #4CAF50;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
+ input[type="range"]::-webkit-slider-thumb {
+ -webkit-appearance: none;
+ width: 18px;
+ height: 18px;
+ background: #4CAF50;
+ border-radius: 50%;
+ cursor: pointer;
+ transition: background 0.2s;
+ }
 
-        input[type="range"]::-webkit-slider-thumb:hover {
-            background: #5CBF60;
-        }
+ input[type="range"]::-webkit-slider-thumb:hover {
+ background: #5CBF60;
+ }
 
-        input[type="range"]::-moz-range-thumb {
-            width: 18px;
-            height: 18px;
-            background: #4CAF50;
-            border-radius: 50%;
-            cursor: pointer;
-            border: none;
-        }
+ input[type="range"]::-moz-range-thumb {
+ width: 18px;
+ height: 18px;
+ background: #4CAF50;
+ border-radius: 50%;
+ cursor: pointer;
+ border: none;
+ }
 
-        .value-display {
-            min-width: 60px;
-            padding: 0.375rem 0.75rem;
-            background-color: #2a2a2a;
-            border: 1px solid #444;
-            border-radius: 6px;
-            font-size: 0.875rem;
-            text-align: center;
-            color: #fff;
-        }
+ .value-display {
+ min-width: 60px;
+ padding: 0.375rem 0.75rem;
+ background-color: #2a2a2a;
+ border: 1px solid #444;
+ border-radius: 6px;
+ font-size: 0.875rem;
+ text-align: center;
+ color: #fff;
+ }
 
-        .btn {
-            padding: 0.625rem 1.5rem;
-            border: none;
-            border-radius: 8px;
-            font-size: 0.9375rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
+ .select-container {
+ position: relative;
+ }
 
-        .btn-primary {
-            background-color: #4CAF50;
-            color: white;
-        }
+ select {
+ appearance: none;
+ background-color: #2a2a2a;
+ border: 1px solid #444;
+ border-radius: 6px;
+ padding: 0.625rem 2rem 0.625rem 0.75rem;
+ color: #fff;
+ font-size: 0.875rem;
+ cursor: pointer;
+ min-width: 180px;
+ }
 
-        .btn-primary:hover {
-            background-color: #5CBF60;
-        }
+ select:focus {
+ outline: none;
+ border-color: #4CAF50;
+ }
 
-        .btn-primary:active {
-            transform: scale(0.98);
-        }
+ .select-container::after {
+ content: '▼';
+ position: absolute;
+ right: 0.75rem;
+ top: 50%;
+ transform: translateY(-50%);
+ color: #a0a0a0;
+ pointer-events: none;
+ font-size: 0.75rem;
+ }
 
-        .btn-primary:disabled {
-            background-color: #2a2a2a;
-            color: #666;
-            cursor: not-allowed;
-        }
+ .btn {
+ padding: 0.625rem 1.5rem;
+ border: none;
+ border-radius: 8px;
+ font-size: 0.9375rem;
+ font-weight: 500;
+ cursor: pointer;
+ transition: all 0.2s;
+ display: inline-flex;
+ align-items: center;
+ gap: 0.5rem;
+ }
 
-        .btn-stop {
-            background-color: #f44336;
-            color: white;
-        }
+ .btn-primary {
+ background-color: #4CAF50;
+ color: white;
+ }
 
-        .btn-stop:hover {
-            background-color: #f66;
-        }
+ .btn-primary:hover {
+ background-color: #5CBF60;
+ }
 
-        .video-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
+ .btn-primary:active {
+ transform: scale(0.98);
+ }
 
-        .video-wrapper {
-            background-color: #1a1a1a;
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid #333;
-            position: relative;
-        }
+ .btn-primary:disabled {
+ background-color: #2a2a2a;
+ color: #666;
+ cursor: not-allowed;
+ }
 
-        .video-label {
-            position: absolute;
-            top: 1rem;
-            left: 1rem;
-            background-color: rgba(0, 0, 0, 0.7);
-            padding: 0.375rem 0.75rem;
-            border-radius: 6px;
-            font-size: 0.875rem;
-            font-weight: 500;
-            z-index: 10;
-            backdrop-filter: blur(10px);
-        }
+ .btn-stop {
+ background-color: #f44336;
+ color: white;
+ }
 
-        video, canvas {
-            width: 100%;
-            height: auto;
-            display: block;
-            background-color: #0a0a0a;
-        }
+ .btn-stop:hover {
+ background-color: #f66;
+ }
 
-        .status-bar {
-            background-color: #1a1a1a;
-            border-radius: 8px;
-            padding: 1rem 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid #333;
-        }
+ .video-container {
+ background-color: #1a1a1a;
+ border-radius: 12px;
+ overflow: hidden;
+ border: 1px solid #333;
+ position: relative;
+ margin-bottom: 2rem;
+ display: none;
+ max-width: 800px;
+ margin-left: auto;
+ margin-right: auto;
+ }
 
-        .status-indicator {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.875rem;
-        }
+ .video-label {
+ position: absolute;
+ top: 1rem;
+ left: 1rem;
+ background-color: rgba(0, 0, 0, 0.8);
+ padding: 0.5rem 1rem;
+ border-radius: 6px;
+ font-size: 0.875rem;
+ font-weight: 500;
+ z-index: 20;
+ backdrop-filter: blur(10px);
+ color: #fff;
+ }
 
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: #666;
-        }
+ .display-canvas-container {
+ position: relative;
+ width: 100%;
+ }
 
-        .status-dot.active {
-            background-color: #4CAF50;
-            animation: pulse 2s infinite;
-        }
+ #video {
+ display: none;
+ }
 
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4);
-            }
-            70% {
-                box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
-            }
-        }
+ #displayCanvas {
+ width: 100%;
+ height: auto;
+ display: block;
+ background-color: #0a0a0a;
+ }
 
-        .error-message {
-            background-color: rgba(244, 67, 54, 0.1);
-            border: 1px solid #f44336;
-            color: #ff8a80;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            display: none;
-            align-items: center;
-            gap: 0.75rem;
-        }
+ .blend-controls {
+ display: none;
+ flex-wrap: wrap;
+ gap: 1rem;
+ margin-top: 0.5rem;
+ padding: 1rem;
+ background-color: #2a2a2a;
+ border-radius: 8px;
+ border: 1px solid #444;
+ }
 
-        .error-message.show {
-            display: flex;
-        }
+ .blend-controls.show {
+ display: flex;
+ }
 
-        .loading-state {
-            text-align: center;
-            padding: 4rem 2rem;
-            color: #666;
-        }
+ .status-bar {
+ background-color: #1a1a1a;
+ border-radius: 8px;
+ padding: 1rem 1.5rem;
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ border: 1px solid #333;
+ }
 
-        .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid #333;
-            border-top-color: #4CAF50;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 1rem;
-        }
+ .status-indicator {
+ display: flex;
+ align-items: center;
+ gap: 0.5rem;
+ font-size: 0.875rem;
+ }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+ .status-dot {
+ width: 8px;
+ height: 8px;
+ border-radius: 50%;
+ background-color: #666;
+ }
 
-        @media (max-width: 768px) {
-            .video-container {
-                grid-template-columns: 1fr;
-            }
-            
-            .control-group {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .slider-container {
-                width: 100%;
-            }
-            
-            input[type="range"] {
-                flex: 1;
-            }
-        }
+ .status-dot.active {
+ background-color: #4CAF50;
+ animation: pulse 2s infinite;
+ }
 
-        .threshold-control {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
+ @keyframes pulse {
+ 0% {
+ box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4);
+ }
+ 70% {
+ box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+ }
+ 100% {
+ box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+ }
+ }
 
-        .info-text {
-            font-size: 0.75rem;
-            color: #666;
-            margin-top: 0.25rem;
-        }
-    </style>
+ .error-message {
+ background-color: rgba(244, 67, 54, 0.1);
+ border: 1px solid #f44336;
+ color: #ff8a80;
+ padding: 1rem;
+ border-radius: 8px;
+ margin-bottom: 1rem;
+ display: none;
+ align-items: center;
+ gap: 0.75rem;
+ }
+
+ .error-message.show {
+ display: flex;
+ }
+
+ .loading-state {
+ text-align: center;
+ padding: 4rem 2rem;
+ color: #666;
+ }
+
+ .loading-spinner {
+ width: 40px;
+ height: 40px;
+ border: 3px solid #333;
+ border-top-color: #4CAF50;
+ border-radius: 50%;
+ animation: spin 1s linear infinite;
+ margin: 0 auto 1rem;
+ }
+
+ @keyframes spin {
+ to { transform: rotate(360deg); }
+ }
+
+ .info-text {
+ font-size: 0.75rem;
+ color: #666;
+ margin-top: 0.25rem;
+ }
+
+ @media (max-width: 768px) {
+ .control-group {
+ flex-direction: column;
+ align-items: stretch;
+ }
+ 
+ .slider-container {
+ width: 100%;
+ }
+ 
+ input[type="range"] {
+ flex: 1;
+ }
+
+ select {
+ min-width: 100%;
+ }
+ }
+ </style>
 </head>
 <body>
-    <header class="header">
-        <h1>Motion Detector</h1>
-    </header>
+ <header class="header">
+ <h1>Motion Detector</h1>
+ </header>
 
-    <main class="main-container">
-        <div class="error-message" id="errorMessage">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M10 0C4.48 0 0 4.48 0 10s4.48 10 10 10 10-4.48 10-10S15.52 0 10 0zm1 15H9v-2h2v2zm0-4H9V5h2v6z"/>
-            </svg>
-            <span id="errorText">Camera access denied. Please allow camera permissions.</span>
-        </div>
+ <main class="main-container">
+ <div class="error-message" id="errorMessage">
+ <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+ <path d="M10 0C4.48 0 0 4.48 0 10s4.48 10 10 10 10-4.48 10-10S15.52 0 10 0zm1 15H9v-2h2v2zm0-4H9V5h2v6z"/>
+ </svg>
+ <span id="errorText">Camera access denied. Please allow camera permissions.</span>
+ </div>
 
-        <div class="controls">
-            <div class="control-group">
-                <div class="control-item">
-                    <label for="frameInterval">Frame Difference Interval</label>
-                    <div class="slider-container">
-                        <input type="range" id="frameInterval" min="1" max="30" value="5">
-                        <div class="value-display" id="frameIntervalValue">5 frames</div>
-                    </div>
-                    <div class="info-text">Higher values detect slower motion</div>
-                </div>
+ <div class="controls">
+ <div class="control-group">
+ <div class="control-item">
+ <label for="displayMode">Display Mode</label>
+ <div class="select-container">
+ <select id="displayMode">
+ <option value="camera">Camera Feed Only</option>
+ <option value="motion">Motion Detection Only</option>
+ <option value="overlay" selected>Camera + Motion Overlay</option>
+ <option value="screen">Screen Blend</option>
+ <option value="multiply">Multiply Blend</option>
+ <option value="difference">Difference Blend</option>
+ <option value="exclusion">Exclusion Blend</option>
+ </select>
+ </div>
+ <div class="info-text">Choose how to display the output</div>
+ </div>
 
-                <div class="control-item">
-                    <label for="threshold">Motion Threshold</label>
-                    <div class="slider-container">
-                        <input type="range" id="threshold" min="10" max="100" value="30">
-                        <div class="value-display" id="thresholdValue">30</div>
-                    </div>
-                    <div class="info-text">Lower values detect more subtle motion</div>
-                </div>
+ <div class="control-item">
+ <label for="frameInterval">Frame Difference Interval</label>
+ <div class="slider-container">
+ <input type="range" id="frameInterval" min="1" max="30" value="5">
+ <div class="value-display" id="frameIntervalValue">5 frames</div>
+ </div>
+ <div class="info-text">Higher values detect slower motion</div>
+ </div>
 
-                <div class="control-item">
-                    <button class="btn btn-primary" id="startBtn">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                            <path d="M11.596 8.697l-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 010 1.393z"/>
-                        </svg>
-                        Start Detection
-                    </button>
-                </div>
-            </div>
-        </div>
+ <div class="control-item">
+ <label for="threshold">Motion Threshold</label>
+ <div class="slider-container">
+ <input type="range" id="threshold" min="10" max="100" value="30">
+ <div class="value-display" id="thresholdValue">30</div>
+ </div>
+ <div class="info-text">Lower values detect more subtle motion</div>
+ </div>
 
-        <div class="video-container" id="videoContainer" style="display: none;">
-            <div class="video-wrapper">
-                <div class="video-label">Camera Feed</div>
-                <video id="video" autoplay playsinline></video>
-            </div>
-            <div class="video-wrapper">
-                <div class="video-label">Motion Detection</div>
-                <canvas id="motionCanvas"></canvas>
-            </div>
-        </div>
+ <div class="control-item">
+ <button class="btn btn-primary" id="startBtn">
+ <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+ <path d="M11.596 8.697l-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 010 1.393z"/>
+ </svg>
+ Start Detection
+ </button>
+ </div>
+ </div>
 
-        <div class="loading-state" id="loadingState" style="display: none;">
-            <div class="loading-spinner"></div>
-            <p>Initializing camera...</p>
-        </div>
+ <div class="blend-controls" id="blendControls">
+ <div class="control-item">
+ <label for="cameraOpacity">Camera Opacity</label>
+ <div class="slider-container">
+ <input type="range" id="cameraOpacity" min="0" max="100" value="100">
+ <div class="value-display" id="cameraOpacityValue">100%</div>
+ </div>
+ </div>
+ 
+ <div class="control-item">
+ <label for="motionOpacity">Motion Opacity</label>
+ <div class="slider-container">
+ <input type="range" id="motionOpacity" min="0" max="100" value="80">
+ <div class="value-display" id="motionOpacityValue">80%</div>
+ </div>
+ </div>
+ </div>
+ </div>
 
-        <div class="status-bar" id="statusBar" style="display: none;">
-            <div class="status-indicator">
-                <span class="status-dot" id="statusDot"></span>
-                <span id="statusText">Inactive</span>
-            </div>
-            <div class="status-indicator">
-                <span>FPS: <span id="fpsCounter">0</span></span>
-            </div>
-        </div>
-    </main>
+ <div class="video-container" id="videoContainer">
+ <div class="video-label" id="videoLabel">Camera + Motion Overlay</div>
+ <div class="display-canvas-container">
+ <video id="video" autoplay playsinline></video>
+ <canvas id="displayCanvas"></canvas>
+ </div>
+ </div>
 
-    <script>
-        class MotionDetector {
-            constructor() {
-                this.video = document.getElementById('video');
-                this.canvas = document.getElementById('motionCanvas');
-                this.ctx = this.canvas.getContext('2d');
-                
-                this.frameInterval = 5;
-                this.threshold = 30;
-                this.frameBuffer = [];
-                this.isRunning = false;
-                this.stream = null;
-                
-                this.fps = 0;
-                this.frameCount = 0;
-                this.lastFpsUpdate = Date.now();
-                
-                this.initializeElements();
-                this.attachEventListeners();
-            }
+ <div class="loading-state" id="loadingState" style="display: none;">
+ <div class="loading-spinner"></div>
+ <p>Initializing camera...</p>
+ </div>
 
-            initializeElements() {
-                this.startBtn = document.getElementById('startBtn');
-                this.frameIntervalSlider = document.getElementById('frameInterval');
-                this.thresholdSlider = document.getElementById('threshold');
-                this.frameIntervalValue = document.getElementById('frameIntervalValue');
-                this.thresholdValue = document.getElementById('thresholdValue');
-                this.errorMessage = document.getElementById('errorMessage');
-                this.errorText = document.getElementById('errorText');
-                this.videoContainer = document.getElementById('videoContainer');
-                this.loadingState = document.getElementById('loadingState');
-                this.statusBar = document.getElementById('statusBar');
-                this.statusDot = document.getElementById('statusDot');
-                this.statusText = document.getElementById('statusText');
-                this.fpsCounter = document.getElementById('fpsCounter');
-            }
+ <div class="status-bar" id="statusBar" style="display: none;">
+ <div class="status-indicator">
+ <span class="status-dot" id="statusDot"></span>
+ <span id="statusText">Inactive</span>
+ </div>
+ <div class="status-indicator">
+ <span>Mode: <span id="currentMode">Camera + Motion Overlay</span></span>
+ </div>
+ <div class="status-indicator">
+ <span>FPS: <span id="fpsCounter">0</span></span>
+ </div>
+ </div>
+ </main>
 
-            attachEventListeners() {
-                this.startBtn.addEventListener('click', () => this.toggleDetection());
-                
-                this.frameIntervalSlider.addEventListener('input', (e) => {
-                    this.frameInterval = parseInt(e.target.value);
-                    this.frameIntervalValue.textContent = `${this.frameInterval} frames`;
-                });
-                
-                this.thresholdSlider.addEventListener('input', (e) => {
-                    this.threshold = parseInt(e.target.value);
-                    this.thresholdValue.textContent = this.threshold;
-                });
-            }
+ <script>
+ class MotionDetector {
+ constructor() {
+ this.video = document.getElementById('video');
+ this.displayCanvas = document.getElementById('displayCanvas');
+ this.displayCtx = this.displayCanvas.getContext('2d');
+ 
+ // Create hidden canvases for processing
+ this.tempCanvas = document.createElement('canvas');
+ this.tempCtx = this.tempCanvas.getContext('2d');
+ this.motionCanvas = document.createElement('canvas');
+ this.motionCtx = this.motionCanvas.getContext('2d');
+ 
+ this.frameInterval = 5;
+ this.threshold = 30;
+ this.displayMode = 'overlay';
+ this.cameraOpacity = 1.0;
+ this.motionOpacity = 0.8;
+ 
+ this.frameBuffer = [];
+ this.isRunning = false;
+ this.stream = null;
+ 
+ // Store current frame data for immediate re-rendering
+ this.currentFrameData = null;
+ this.currentMotionData = null;
+ 
+ this.fps = 0;
+ this.frameCount = 0;
+ this.lastFpsUpdate = Date.now();
+ 
+ this.initializeElements();
+ this.attachEventListeners();
+ }
 
-            async toggleDetection() {
-                if (this.isRunning) {
-                    this.stop();
-                } else {
-                    await this.start();
-                }
-            }
+ initializeElements() {
+ this.startBtn = document.getElementById('startBtn');
+ this.displayModeSelect = document.getElementById('displayMode');
+ this.frameIntervalSlider = document.getElementById('frameInterval');
+ this.thresholdSlider = document.getElementById('threshold');
+ this.cameraOpacitySlider = document.getElementById('cameraOpacity');
+ this.motionOpacitySlider = document.getElementById('motionOpacity');
+ 
+ this.frameIntervalValue = document.getElementById('frameIntervalValue');
+ this.thresholdValue = document.getElementById('thresholdValue');
+ this.cameraOpacityValue = document.getElementById('cameraOpacityValue');
+ this.motionOpacityValue = document.getElementById('motionOpacityValue');
+ 
+ this.blendControls = document.getElementById('blendControls');
+ this.videoLabel = document.getElementById('videoLabel');
+ this.currentMode = document.getElementById('currentMode');
+ 
+ this.errorMessage = document.getElementById('errorMessage');
+ this.errorText = document.getElementById('errorText');
+ this.videoContainer = document.getElementById('videoContainer');
+ this.loadingState = document.getElementById('loadingState');
+ this.statusBar = document.getElementById('statusBar');
+ this.statusDot = document.getElementById('statusDot');
+ this.statusText = document.getElementById('statusText');
+ this.fpsCounter = document.getElementById('fpsCounter');
+ }
 
-            async start() {
-                try {
-                    this.showLoading(true);
-                    this.hideError();
-                    
-                    this.stream = await navigator.mediaDevices.getUserMedia({ 
-                        video: { 
-                            width: { ideal: 640 },
-                            height: { ideal: 480 }
-                        } 
-                    });
-                    
-                    this.video.srcObject = this.stream;
-                    
-                    await new Promise((resolve) => {
-                        this.video.onloadedmetadata = resolve;
-                    });
-                    
-                    this.canvas.width = this.video.videoWidth;
-                    this.canvas.height = this.video.videoHeight;
-                    
-                    this.frameBuffer = [];
-                    this.isRunning = true;
-                    
-                    this.updateUI(true);
-                    this.showLoading(false);
-                    this.processFrame();
-                    
-                } catch (error) {
-                    this.showLoading(false);
-                    this.handleError(error);
-                }
-            }
+ attachEventListeners() {
+ this.startBtn.addEventListener('click', () => this.toggleDetection());
+ 
+ this.displayModeSelect.addEventListener('change', (e) => {
+ this.displayMode = e.target.value;
+ this.updateModeDisplay();
+ this.updateBlendControlsVisibility();
+ // Re-render current frame with new display mode
+ this.renderCurrentFrame();
+ });
+ 
+ this.frameIntervalSlider.addEventListener('input', (e) => {
+ this.frameInterval = parseInt(e.target.value);
+ this.frameIntervalValue.textContent = `${this.frameInterval} frames`;
+ });
+ 
+ this.thresholdSlider.addEventListener('input', (e) => {
+ this.threshold = parseInt(e.target.value);
+ this.thresholdValue.textContent = this.threshold;
+ });
+ 
+ this.cameraOpacitySlider.addEventListener('input', (e) => {
+ this.cameraOpacity = parseInt(e.target.value) / 100;
+ this.cameraOpacityValue.textContent = `${e.target.value}%`;
+ // Re-render current frame with new opacity
+ this.renderCurrentFrame();
+ });
+ 
+ this.motionOpacitySlider.addEventListener('input', (e) => {
+ this.motionOpacity = parseInt(e.target.value) / 100;
+ this.motionOpacityValue.textContent = `${e.target.value}%`;
+ // Re-render current frame with new opacity
+ this.renderCurrentFrame();
+ });
+ }
 
-            stop() {
-                this.isRunning = false;
-                
-                if (this.stream) {
-                    this.stream.getTracks().forEach(track => track.stop());
-                    this.stream = null;
-                }
-                
-                this.video.srcObject = null;
-                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                
-                this.updateUI(false);
-            }
+ updateModeDisplay() {
+ const modeLabels = {
+ 'camera': 'Camera Feed Only',
+ 'motion': 'Motion Detection Only',
+ 'overlay': 'Camera + Motion Overlay',
+ 'screen': 'Screen Blend Mode',
+ 'multiply': 'Multiply Blend Mode',
+ 'difference': 'Difference Blend Mode',
+ 'exclusion': 'Exclusion Blend Mode'
+ };
+ 
+ this.videoLabel.textContent = modeLabels[this.displayMode];
+ this.currentMode.textContent = modeLabels[this.displayMode];
+ }
 
-            processFrame() {
-                if (!this.isRunning) return;
-                
-                const tempCanvas = document.createElement('canvas');
-                tempCanvas.width = this.canvas.width;
-                tempCanvas.height = this.canvas.height;
-                const tempCtx = tempCanvas.getContext('2d');
-                
-                tempCtx.drawImage(this.video, 0, 0);
-                const currentFrame = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
-                
-                this.frameBuffer.push(currentFrame);
-                
-                if (this.frameBuffer.length > this.frameInterval) {
-                    this.frameBuffer.shift();
-                }
-                
-                if (this.frameBuffer.length === this.frameInterval) {
-                    this.detectMotion();
-                }
-                
-                this.updateFPS();
-                
-                requestAnimationFrame(() => this.processFrame());
-            }
+ updateBlendControlsVisibility() {
+ const needsBlendControls = ['overlay', 'screen', 'multiply', 'difference', 'exclusion'].includes(this.displayMode);
+ this.blendControls.classList.toggle('show', needsBlendControls);
+ }
 
-            detectMotion() {
-                const oldFrame = this.frameBuffer[0];
-                const newFrame = this.frameBuffer[this.frameBuffer.length - 1];
-                
-                const motionData = this.ctx.createImageData(this.canvas.width, this.canvas.height);
-                const threshold = this.threshold;
-                
-                for (let i = 0; i < oldFrame.data.length; i += 4) {
-                    const rDiff = Math.abs(oldFrame.data[i] - newFrame.data[i]);
-                    const gDiff = Math.abs(oldFrame.data[i + 1] - newFrame.data[i + 1]);
-                    const bDiff = Math.abs(oldFrame.data[i + 2] - newFrame.data[i + 2]);
-                    
-                    const totalDiff = (rDiff + gDiff + bDiff) / 3;
-                    
-                    if (totalDiff > threshold) {
-                        motionData.data[i] = 255;     // R
-                        motionData.data[i + 1] = 255; // G
-                        motionData.data[i + 2] = 255; // B
-                        motionData.data[i + 3] = 255; // A
-                    } else {
-                        motionData.data[i] = 0;
-                        motionData.data[i + 1] = 0;
-                        motionData.data[i + 2] = 0;
-                        motionData.data[i + 3] = 255;
-                    }
-                }
-                
-                this.ctx.putImageData(motionData, 0, 0);
-            }
+ // New method to re-render current frame
+ renderCurrentFrame() {
+ if (!this.isRunning || !this.currentFrameData) return;
+ 
+ this.renderDisplay(this.currentFrameData, this.currentMotionData);
+ }
 
-            updateFPS() {
-                this.frameCount++;
-                const now = Date.now();
-                const elapsed = now - this.lastFpsUpdate;
-                
-                if (elapsed >= 1000) {
-                    this.fps = Math.round((this.frameCount * 1000) / elapsed);
-                    this.fpsCounter.textContent = this.fps;
-                    this.frameCount = 0;
-                    this.lastFpsUpdate = now;
-                }
-            }
+ async toggleDetection() {
+ if (this.isRunning) {
+ this.stop();
+ } else {
+ await this.start();
+ }
+ }
 
-            updateUI(isRunning) {
-                if (isRunning) {
-                    this.startBtn.innerHTML = `
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                            <path d="M5.5 3.5A1.5 1.5 0 017 5v6a1.5 1.5 0 01-3 0V5a1.5 1.5 0 011.5-1.5zm5 0A1.5 1.5 0 0112 5v6a1.5 1.5 0 01-3 0V5a1.5 1.5 0 011.5-1.5z"/>
-                        </svg>
-                        Stop Detection
-                    `;
-                    this.startBtn.classList.remove('btn-primary');
-                    this.startBtn.classList.add('btn-stop');
-                    
-                    this.frameIntervalSlider.disabled = true;
-                    this.thresholdSlider.disabled = true;
-                    
-                    this.videoContainer.style.display = 'grid';
-                    this.statusBar.style.display = 'flex';
-                    this.statusDot.classList.add('active');
-                    this.statusText.textContent = 'Active - Detecting Motion';
-                } else {
-                    this.startBtn.innerHTML = `
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                            <path d="M11.596 8.697l-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 010 1.393z"/>
-                        </svg>
-                        Start Detection
-                    `;
-                    this.startBtn.classList.remove('btn-stop');
-                    this.startBtn.classList.add('btn-primary');
-                    
-                    this.frameIntervalSlider.disabled = false;
-                    this.thresholdSlider.disabled = false;
-                    
-                    this.videoContainer.style.display = 'none';
-                    this.statusBar.style.display = 'none';
-                    this.statusDot.classList.remove('active');
-                    this.statusText.textContent = 'Inactive';
-                    this.fpsCounter.textContent = '0';
-                }
-            }
+ async start() {
+ try {
+ this.showLoading(true);
+ this.hideError();
+ 
+ this.stream = await navigator.mediaDevices.getUserMedia({ 
+ video: { 
+ width: { ideal: 640 },
+ height: { ideal: 480 }
+ } 
+ });
+ 
+ this.video.srcObject = this.stream;
+ 
+ await new Promise((resolve) => {
+ this.video.onloadedmetadata = resolve;
+ });
+ 
+ // Set up all canvas dimensions
+ const width = this.video.videoWidth;
+ const height = this.video.videoHeight;
+ 
+ this.displayCanvas.width = width;
+ this.displayCanvas.height = height;
+ this.tempCanvas.width = width;
+ this.tempCanvas.height = height;
+ this.motionCanvas.width = width;
+ this.motionCanvas.height = height;
+ 
+ this.frameBuffer = [];
+ this.currentFrameData = null;
+ this.currentMotionData = null;
+ this.isRunning = true;
+ 
+ this.updateUI(true);
+ this.updateModeDisplay();
+ this.updateBlendControlsVisibility();
+ this.showLoading(false);
+ this.processFrame();
+ 
+ } catch (error) {
+ this.showLoading(false);
+ this.handleError(error);
+ }
+ }
 
-            showLoading(show) {
-                this.loadingState.style.display = show ? 'block' : 'none';
-                this.startBtn.disabled = show;
-            }
+ stop() {
+ this.isRunning = false;
+ 
+ if (this.stream) {
+ this.stream.getTracks().forEach(track => track.stop());
+ this.stream = null;
+ }
+ 
+ this.video.srcObject = null;
+ this.displayCtx.clearRect(0, 0, this.displayCanvas.width, this.displayCanvas.height);
+ 
+ this.currentFrameData = null;
+ this.currentMotionData = null;
+ 
+ this.updateUI(false);
+ }
 
-            hideError() {
-                this.errorMessage.classList.remove('show');
-            }
+ processFrame() {
+ if (!this.isRunning) return;
+ 
+ // Draw current frame to temp canvas
+ this.tempCtx.drawImage(this.video, 0, 0);
+ this.currentFrameData = this.tempCtx.getImageData(0, 0, this.tempCanvas.width, this.tempCanvas.height);
+ 
+ this.frameBuffer.push(this.currentFrameData);
+ 
+ if (this.frameBuffer.length > this.frameInterval) {
+ this.frameBuffer.shift();
+ }
+ 
+ // Detect motion if we have enough frames
+ if (this.frameBuffer.length === this.frameInterval) {
+ this.currentMotionData = this.detectMotion();
+ }
+ 
+ // Render the appropriate display mode
+ this.renderDisplay(this.currentFrameData, this.currentMotionData);
+ 
+ this.updateFPS();
+ 
+ requestAnimationFrame(() => this.processFrame());
+ }
 
-            handleError(error) {
-                console.error('Error:', error);
-                
-                let errorMessage = 'An error occurred while accessing the camera.';
-                
-                if (error.name === 'NotAllowedError') {
-                    errorMessage = 'Camera access denied. Please allow camera permissions and try again.';
-                } else if (error.name === 'NotFoundError') {
-                    errorMessage = 'No camera found. Please connect a camera and try again.';
-                } else if (error.name === 'NotReadableError') {
-                    errorMessage = 'Camera is already in use by another application.';
-                }
-                
-                this.errorText.textContent = errorMessage;
-                this.errorMessage.classList.add('show');
-                
-                this.updateUI(false);
-            }
-        }
+ detectMotion() {
+ const oldFrame = this.frameBuffer[0];
+ const newFrame = this.frameBuffer[this.frameBuffer.length - 1];
+ 
+ const motionData = this.motionCtx.createImageData(this.motionCanvas.width, this.motionCanvas.height);
+ const threshold = this.threshold;
+ 
+ for (let i = 0; i < oldFrame.data.length; i += 4) {
+ const rDiff = Math.abs(oldFrame.data[i] - newFrame.data[i]);
+ const gDiff = Math.abs(oldFrame.data[i + 1] - newFrame.data[i + 1]);
+ const bDiff = Math.abs(oldFrame.data[i + 2] - newFrame.data[i + 2]);
+ 
+ const totalDiff = (rDiff + gDiff + bDiff) / 3;
+ 
+ if (totalDiff > threshold) {
+ motionData.data[i] = 255; // R
+ motionData.data[i + 1] = 255; // G
+ motionData.data[i + 2] = 255; // B
+ motionData.data[i + 3] = 255; // A
+ } else {
+ motionData.data[i] = 0;
+ motionData.data[i + 1] = 0;
+ motionData.data[i + 2] = 0;
+ motionData.data[i + 3] = 255;
+ }
+ }
+ 
+ return motionData;
+ }
 
-        // Initialize the app
-        const motionDetector = new MotionDetector();
-    </script>
+ renderDisplay(currentFrame, motionData) {
+ // Always clear and reset canvas state first
+ this.displayCtx.clearRect(0, 0, this.displayCanvas.width, this.displayCanvas.height);
+ this.displayCtx.globalAlpha = 1.0;
+ this.displayCtx.globalCompositeOperation = 'source-over';
+ 
+ switch (this.displayMode) {
+ case 'camera':
+ this.displayCtx.drawImage(this.video, 0, 0);
+ break;
+ 
+ case 'motion':
+ if (motionData) {
+ this.displayCtx.putImageData(motionData, 0, 0);
+ } else {
+ // Show black screen if no motion data yet
+ this.displayCtx.fillStyle = '#000000';
+ this.displayCtx.fillRect(0, 0, this.displayCanvas.width, this.displayCanvas.height);
+ }
+ break;
+ 
+ case 'overlay':
+ this.renderOverlay(motionData);
+ break;
+ 
+ case 'screen':
+ this.renderBlendMode(motionData, 'screen');
+ break;
+ 
+ case 'multiply':
+ this.renderBlendMode(motionData, 'multiply');
+ break;
+ 
+ case 'difference':
+ this.renderBlendMode(motionData, 'difference');
+ break;
+ 
+ case 'exclusion':
+ this.renderBlendMode(motionData, 'exclusion');
+ break;
+ }
+ 
+ // Reset canvas state after rendering
+ this.displayCtx.globalAlpha = 1.0;
+ this.displayCtx.globalCompositeOperation = 'source-over';
+ }
+
+ renderOverlay(motionData) {
+ // Draw camera feed with opacity
+ if (this.cameraOpacity > 0) {
+ this.displayCtx.globalAlpha = this.cameraOpacity;
+ this.displayCtx.drawImage(this.video, 0, 0);
+ }
+ 
+ // Draw motion data with opacity on top
+ if (motionData && this.motionOpacity > 0) {
+ this.displayCtx.globalAlpha = this.motionOpacity;
+ this.displayCtx.globalCompositeOperation = 'source-over';
+ 
+ // Create a temporary canvas for the motion data with proper alpha
+ const tempMotionCanvas = document.createElement('canvas');
+ tempMotionCanvas.width = this.displayCanvas.width;
+ tempMotionCanvas.height = this.displayCanvas.height;
+ const tempMotionCtx = tempMotionCanvas.getContext('2d');
+ 
+ // Put motion data on temp canvas
+ tempMotionCtx.putImageData(motionData, 0, 0);
+ 
+ // Draw temp canvas onto display canvas
+ this.displayCtx.drawImage(tempMotionCanvas, 0, 0);
+ }
+ }
+
+ renderBlendMode(motionData, blendMode) {
+ // Draw camera feed first
+ if (this.cameraOpacity > 0) {
+ this.displayCtx.globalAlpha = this.cameraOpacity;
+ this.displayCtx.globalCompositeOperation = 'source-over';
+ this.displayCtx.drawImage(this.video, 0, 0);
+ }
+ 
+ // Apply blend mode with motion data
+ if (motionData && this.motionOpacity > 0) {
+ this.displayCtx.globalAlpha = this.motionOpacity;
+ this.displayCtx.globalCompositeOperation = blendMode;
+ 
+ // Create a temporary canvas for the motion data
+ const tempMotionCanvas = document.createElement('canvas');
+ tempMotionCanvas.width = this.displayCanvas.width;
+ tempMotionCanvas.height = this.displayCanvas.height;
+ const tempMotionCtx = tempMotionCanvas.getContext('2d');
+ 
+ // Put motion data on temp canvas
+ tempMotionCtx.putImageData(motionData, 0, 0);
+ 
+ // Draw temp canvas with blend mode
+ this.displayCtx.drawImage(tempMotionCanvas, 0, 0);
+ }
+ }
+
+ updateFPS() {
+ this.frameCount++;
+ const now = Date.now();
+ const elapsed = now - this.lastFpsUpdate;
+ 
+ if (elapsed >= 1000) {
+ this.fps = Math.round((this.frameCount * 1000) / elapsed);
+ this.fpsCounter.textContent = this.fps;
+ this.frameCount = 0;
+ this.lastFpsUpdate = now;
+ }
+ }
+
+ updateUI(isRunning) {
+ if (isRunning) {
+ this.startBtn.innerHTML = `
+ <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+ <path d="M5.5 3.5A1.5 1.5 0 017 5v6a1.5 1.5 0 01-3 0V5a1.5 1.5 0 011.5-1.5zm5 0A1.5 1.5 0 0112 5v6a1.5 1.5 0 01-3 0V5a1.5 1.5 0 011.5-1.5z"/>
+ </svg>
+ Stop Detection
+ `;
+ this.startBtn.classList.remove('btn-primary');
+ this.startBtn.classList.add('btn-stop');
+ 
+ this.displayModeSelect.disabled = false;
+ this.frameIntervalSlider.disabled = true;
+ this.thresholdSlider.disabled = true;
+ 
+ this.videoContainer.style.display = 'block';
+ this.statusBar.style.display = 'flex';
+ this.statusDot.classList.add('active');
+ this.statusText.textContent = 'Active - Detecting Motion';
+ } else {
+ this.startBtn.innerHTML = `
+ <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+ <path d="M11.596 8.697l-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 010 1.393z"/>
+ </svg>
+ Start Detection
+ `;
+ this.startBtn.classList.remove('btn-stop');
+ this.startBtn.classList.add('btn-primary');
+ 
+ this.displayModeSelect.disabled = false;
+ this.frameIntervalSlider.disabled = false;
+ this.thresholdSlider.disabled = false;
+ 
+ this.videoContainer.style.display = 'none';
+ this.statusBar.style.display = 'none';
+ this.statusDot.classList.remove('active');
+ this.statusText.textContent = 'Inactive';
+ this.fpsCounter.textContent = '0';
+ this.blendControls.classList.remove('show');
+ }
+ }
+
+ showLoading(show) {
+ this.loadingState.style.display = show ? 'block' : 'none';
+ this.startBtn.disabled = show;
+ }
+
+ hideError() {
+ this.errorMessage.classList.remove('show');
+ }
+
+ handleError(error) {
+ console.error('Error:', error);
+ 
+ let errorMessage = 'An error occurred while accessing the camera.';
+ 
+ if (error.name === 'NotAllowedError') {
+ errorMessage = 'Camera access denied. Please allow camera permissions and try again.';
+ } else if (error.name === 'NotFoundError') {
+ errorMessage = 'No camera found. Please connect a camera and try again.';
+ } else if (error.name === 'NotReadableError') {
+ errorMessage = 'Camera is already in use by another application.';
+ }
+ 
+ this.errorText.textContent = errorMessage;
+ this.errorMessage.classList.add('show');
+ 
+ this.updateUI(false);
+ }
+ }
+
+ // Initialize the app
+ const motionDetector = new MotionDetector();
+ </script>
 </body>
 </html>
